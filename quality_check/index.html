@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Invitation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Function to send an invite to another user
+        function sendInvite() {
+            var inviteeId = prompt("Enter the ID of the user you want to invite:");
+            var room = prompt("Enter the room you want to invite them to:");
+            var userId = prompt("Enter your user ID:");
+
+            socket.emit('invite', {
+                'sender_id': userId,
+                'invitee_id': inviteeId,
+                'room': room
+            });
+        }
+
+        // Listen for invitation notifications
+        socket.on('invitation', function(data) {
+            var senderId = data.sender_id;
+            var room = data.room;
+
+            // Show an invitation dialog to the user
+            if (confirm(`User ${senderId} has invited you to join room ${room}. Do you want to join?`)) {
+                var userId = prompt("Enter your user ID:");
+                socket.emit('join', { 'room': room, 'user_id': userId });
+            }
+        });
+
+        // Function to join a room
+        function joinRoom() {
+            var room = prompt("Enter the room you want to join:");
+            var userId = prompt("Enter your user ID:");
+
+            socket.emit('join', { 'room': room, 'user_id': userId });
+        }
+    </script>
+</head>
+<body>
+    <h1>Socket.IO Room System</h1>
+    <button onclick="sendInvite()">Send Invite</button>
+    <button onclick="joinRoom()">Join Room</button>
+</body>
+</html>
